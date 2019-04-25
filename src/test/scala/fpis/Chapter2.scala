@@ -20,4 +20,29 @@ class Chapter2 extends FunSpec with Matchers {
     }
   }
 
+  describe("Higher Order Functions") {
+
+    def curry[A,B,C](f: (A, B) => C): A => (B => C) = (x:A) => (y:B) => f(x,y)
+    it("2.3") {
+      val f = (x:Int,y:Int)=> x*y
+      val c = curry(f)
+      assert(f(5,6) == c(5)(6))
+    }
+
+    def uncurry[A,B,C](f: A => B => C): (A, B) => C = (x:A,y:B)  => f(x)(y)
+    it("2.4") {
+      val f = (x:Int) => (y:Int)=> x*y
+      val c = uncurry(f)
+      assert(f(5)(6) == c(5,6))
+    }
+
+    def compose[A,B,C](f: B => C, g: A => B): A => C = (x:A) => f(g(x))
+    it("2.5") {
+      val f = (x:Int) => x +1
+      val g = (x:Int) => x +2
+      val c = compose(f,g)
+      assert(f(g(5)) == c(5))
+    }
+  }
+
 }
