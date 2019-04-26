@@ -2,7 +2,7 @@ package fpis
 
 import org.scalatest._
 
-class Chapter3 extends FunSpec with Matchers {
+class Chapter3Tree extends FunSpec with Matchers {
 
   describe("List") {
 
