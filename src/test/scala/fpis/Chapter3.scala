@@ -174,6 +174,19 @@ class Chapter3 extends FunSpec with Matchers {
 
       assert(zipWith(List(1,2,3),List(4,5,6))(_+_) == List(5,7,9))
     }
+    it("3.24"){
+      def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean  = sup match {
+        case Nil => false
+        case Cons(supH, supT) =>  sub match {
+          case Nil => true
+          case Cons(subH, subT) => if(supH == subH) hasSubsequence(supT,subT) else hasSubsequence(supT,sub)
+        }
+      }
+
+      assert(hasSubsequence(List(1,2,3,4),List(2,3)) == true)
+      assert(hasSubsequence(List(1,2,3,4),List(2,5)) == false)
+
+    }
 
   }
 }
