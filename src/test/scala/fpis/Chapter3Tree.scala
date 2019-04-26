@@ -18,6 +18,17 @@ class Chapter3Tree extends FunSpec with Matchers {
       assert(size(Leaf(1)) == 1)
       assert(size( Branch(Leaf(1), Leaf(1))) == 3)
     }
+
+    it("3.25"){
+
+      def maximum(t: Tree[Int]): Int = t match {
+      case Leaf(v) => v
+      case Branch(l,r) => if(maximum(l)> maximum(r))  maximum(l) else maximum(r)
+    }
+
+      assert(maximum(Leaf(1)) == 1)
+      assert(maximum( Branch(Leaf(55), Branch(Leaf(1), Leaf(67)))) == 67)
+    }
   }
 }
 
