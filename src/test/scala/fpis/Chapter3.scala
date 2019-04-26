@@ -89,7 +89,7 @@ class Chapter3 extends FunSpec with Matchers {
       }
 
       it("3.12"){
-       def reverse[A](l:List[A]): List[A] = foldLeft(l,List[A]())((e,r)=> Cons(r,e))
+        def reverse[A](l:List[A]): List[A] = foldLeft(l,List[A]())((e,r)=> Cons(r,e))
         assert(reverse(List(1,2,3)) == List(3,2,1))
       }
 
@@ -109,11 +109,70 @@ class Chapter3 extends FunSpec with Matchers {
         assert(foldRightViaFoldLeft(List[Int](1,2,3),0) (_+_) == 6 )
       }
 
-     it("3.14") {
-      def append[A](l: List[A],a: A): List[A] = foldRight(l,List(a)) ((b,a) => Cons(b,a))
-      assert(append(List(1,2,3),4) == List(1,2,3,4))
-     }
 
+      it("3.14") {
+        def append[A](l: List[A],a: A): List[A] = foldRight(l,List(a)) ((b,a) => Cons(b,a))
+        assert(append(List(1,2,3),4) == List(1,2,3,4))
+      }
+
+      def concat[A](ls: List[List[A]]): List[A] = foldRight(ls,List[A]())((l,c) =>  foldRight(l,c)((a,cc) => Cons(a,cc)))
+      it("3.15") {
+        assert(concat( List(List(1,2),List(3,4))) == List(1,2,3,4) )
+
+      }
+      it("3.16") {
+        def add1(ints: List[Int]): List[Int]= ints match {
+          case Nil => Nil
+          case Cons(h,t) => Cons(h+1,add1(t))
+        }
+        assert(add1(List(1,2,3)) == List(2,3,4))
+      }
+
+      it("3.18") {
+        def map[A,B](as: List[A])(f: A => B): List[B] = foldRight(as,List[B]())((a,agg) => Cons(f(a),agg))
+        assert(map(List(1, 2, 3))(_ + 1) == List(2,3,4))
+      }
+
+      it("3.19") {
+        def filter[A](as: List[A])(f: A => Boolean): List[A] = foldRight(as,List[A]())((a,agg) => if(f(a)) Cons(a,agg) else agg)
+        assert(filter(List(1, 2, 3))(_ %2 == 0) == List(2))
+      }
+
+      def flatMap[A,B](as: List[A])(f: A => List[B]): List[B] = foldRight(as,List[B]())((a,agg) =>   concat(List(f(a),agg)))
+      it("3.20"){
+        assert(flatMap(List(1,2,3))(i => List(i,i)) == List(1,1,2,2,3,3))
+      }
+
+      it("3.21"){
+        def filterViaFlatMap[A](as: List[A])(f: A => Boolean): List[A] = flatMap(as)(a => if(f(a)) List(a) else List())
+        assert(filterViaFlatMap(List(1, 2, 3))(_ %2 == 0) == List(2))
+      }
+      it("3.22"){
+
+        def add(x: List[Int], y: List[Int]): List[Int] = x match {
+          case Nil => Nil
+          case Cons(xh, xt) =>  y match {
+            case Nil => Nil
+            case Cons(yh, yt) => Cons(xh + yh,add(xt,yt) )
+          }
+        }
+
+        assert(add(List(1,2,3),List(4,5,6)) == List(5,7,9))
+      }
+
+    }
+
+    it("3.23"){
+
+      def zipWith[A,B,C](x: List[A], y: List[B])(f: (A,B) => C) : List[C] = x match {
+        case Nil => Nil
+        case Cons(xh, xt) =>  y match {
+          case Nil => Nil
+          case Cons(yh, yt) => Cons(f(xh , yh),zipWith(xt,yt)(f) )
+        }
+      }
+
+      assert(zipWith(List(1,2,3),List(4,5,6))(_+_) == List(5,7,9))
     }
 
   }
