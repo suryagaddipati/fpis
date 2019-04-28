@@ -58,6 +58,15 @@ class Chapter4Option extends FunSpec with Matchers {
       assert(sequence(List(SomeO(1),SomeO(2))) == SomeO(List(1,2)))
       assert(sequence(List(SomeO(1),None)) == None)
     }
+    it("4.5"){
+      def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
+          case Nil => SomeO(Nil)
+          case h :: t =>    f(h).flatMap( j =>  {
+            (traverse(t)(f)).map( _ .::( j))
+          })
+        }
+      assert(traverse(List(2,4,8)) (x => SomeO(x *2 ))  == SomeO(List(4,8,16)))
+    }
 
   }
 
