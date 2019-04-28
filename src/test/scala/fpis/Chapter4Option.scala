@@ -19,17 +19,28 @@ class Chapter4Option extends FunSpec with Matchers {
       case SomeO(a) => a
       case None => default
     }
-    def orElse[B >: A](ob: => Option[B]): Option[B] = ???
-    def filter(f: A => Boolean): Option[A] = ???
+    def orElse[B >: A](ob: => Option[B]): Option[B] = map(x => SomeO(x)).getOrElse(ob)
+
+    def filter(f: A => Boolean): Option[A] = flatMap(x => if(f(x)) this else None )
   }
 
   describe("Option") {
 
 
     it("4.1") {
-      assert((SomeO(4)).map(_ * 2) == SomeO(8))
-      assert((SomeO(4)).flatMap(k => SomeO(k * 2)) == SomeO(8))
-      assert((SomeO(4)).getOrElse(0) == 4)
+      assert(SomeO(4).map(_ * 2) == SomeO(8))
+
+      assert(SomeO(4).flatMap(k => SomeO(k * 2)) == SomeO(8))
+
+      assert(SomeO(4).getOrElse(0) == 4)
+
+      assert(SomeO(4).orElse(SomeO(8)) == SomeO(4))
+      assert(None.orElse(SomeO(8)) == SomeO(8))
+
+
+      assert(SomeO(4).filter(_%2 ==0) == SomeO(4))
+      assert(SomeO(5).filter(_%2 ==0) == None)
+
     }
 
   }
