@@ -181,8 +181,8 @@ class Chapter3List extends FunSpec with Matchers {
         case (Cons(supH, supT), Cons(subH, subT))=>  if(supH == subH) hasSubsequence(supT,subT) else hasSubsequence(supT,sub)
       }
 
-      assert(hasSubsequence(List(1,2,3,4),List(2,3)) == true)
-      assert(hasSubsequence(List(1,2,3,4),List(2,5)) == false)
+      assert(hasSubsequence(List(1, 2, 3, 4), List(2, 3)))
+      assert(!hasSubsequence(List(1, 2, 3, 4), List(2, 5)))
 
     }
 
