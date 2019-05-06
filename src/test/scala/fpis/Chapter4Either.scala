@@ -22,10 +22,7 @@ class Chapter4Either extends FunSpec with Matchers {
   case class Right[+A](value: A) extends Either[Nothing, A]
 
   describe("Either") {
-
-
-
-    it("4.1") {
+    it("4.6") {
       assert(Right(3).map(_ * 2) == Right(6))
 
       assert(Right(3).flatMap(k => Right( k * 2)) == Right(6))
@@ -36,6 +33,13 @@ class Chapter4Either extends FunSpec with Matchers {
       assert(Right(4).map2(Right(4))(_ *_) == Right(16))
     }
 
+    it("4.7") {
+      def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] = ??? //for( e <- es)yield e
+      def traverse[E, A, B](as: List[A])( f: A => Either[E, B]): Either[E, List[B]] = ???
+
+      assert(sequence(List(Right(1),Right(2),Right(3))) == Right(List(1,2,3)))
+
+    }
 
   }
 
