@@ -34,14 +34,18 @@ class Chapter4Either extends FunSpec with Matchers {
     }
 
     it("4.7") {
-      def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] = ??? //for( e <- es)yield e
-      def traverse[E, A, B](as: List[A])( f: A => Either[E, B]): Either[E, List[B]] = ???
+      def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] = es.foldLeft[Either[E, List[A]]](Right(List[A]()))((c,a)=> {
+          c.flatMap(av => a.map(cv => av :+ cv))
+        })
+      def traverse[E, A, B](as: List[A])( f: A => Either[E, B]): Either[E, List[B]] = as.foldLeft[Either[E, List[B]]](Right(List[B]())) ((a,c)=> {
+        a.flatMap(av =>  f(c).map(cv=> av :+ cv) )
+      })
 
       assert(sequence(List(Right(1),Right(2),Right(3))) == Right(List(1,2,3)))
+      assert(traverse(List(1,2,3))(Right(_)) == Right(List(1,2,3)))
 
     }
 
   }
 
 }
-
