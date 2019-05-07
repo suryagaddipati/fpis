@@ -43,6 +43,10 @@ class Chapter5Stream extends FunSpec with Matchers {
       case(Empty, Cons(_, _)) => false
       case(Empty,Empty) => true
     }
+    def tails: Stream[Stream[A]] = this match {
+      case Cons(h, t) => Cons(() => this, () => t().tails) 
+      case Empty => Empty 
+    } 
   }
   case object Empty extends Stream[Nothing]
   case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -121,6 +125,12 @@ class Chapter5Stream extends FunSpec with Matchers {
     it("5.14") {
       assert((Stream(1, 2, 3) startsWith Stream(1, 2)) == true)
       assert((Stream(1, 2, 3) startsWith Stream(1,2, 2)) == false)
+    }
+    it("5.15"){
+       val tails = Stream(1,2,3).tails.toList
+       assertEqual(tails(0), Stream(1,2,3))
+       assertEqual(tails(1), Stream(2,3))
+       assertEqual(tails(2), Stream(3))
     }
   }
 }
