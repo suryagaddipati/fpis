@@ -36,6 +36,13 @@ class Chapter5Stream extends FunSpec with Matchers {
 
     def headOptionViaFoldRight(): Option[A] =
       foldRight[Option[A]](None)((c, a) => Some(c))
+
+    def startsWith[A](s: Stream[A]): Boolean = (this,s) match {
+      case (Cons(tH,tT), Cons(oH,oT)) => if(tH()==oH()) tT().startsWith(oT()) else   false
+      case(Cons(_, _), Empty) => true
+      case(Empty, Cons(_, _)) => false
+      case(Empty,Empty) => true
+    }
   }
   case object Empty extends Stream[Nothing]
   case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -101,6 +108,19 @@ class Chapter5Stream extends FunSpec with Matchers {
       }
 
       assertEqual(fibs().take(7), Stream(0, 1, 1, 2, 3, 5, 8))
+    }
+
+    it("5.10") {
+      def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+        case None    => Empty
+        case Some(v) => Cons(() => v._1, () => unfold[A, S](v._2)(f))
+      }
+
+      assertEqual(unfold(2)(s => Some(s, s * 2)).take(4), Stream(2, 4, 8, 16))
+    }
+    it("5.14") {
+      assert((Stream(1, 2, 3) startsWith Stream(1, 2)) == true)
+      assert((Stream(1, 2, 3) startsWith Stream(1,2, 2)) == false)
     }
   }
 }
