@@ -29,9 +29,13 @@ class Chapter5Stream extends FunSpec with Matchers {
         case Cons(h, t) => f(h(), t().foldRight(z)(f))
         case _          => z
       }
-    def takeWhileViaFoldRight(p: A => Boolean): Stream[A] = foldRight[Stream[A]](Empty) ((c,a)=>if(p(c)) Cons(()=>c,()=>a) else Empty)
+    def takeWhileViaFoldRight(p: A => Boolean): Stream[A] =
+      foldRight[Stream[A]](Empty)(
+        (c, a) => if (p(c)) Cons(() => c, () => a) else Empty
+      )
 
-    def headOptionViaFoldRight():Option[A] = foldRight[Option[A]](None)((c,a)=>Some(c))
+    def headOptionViaFoldRight(): Option[A] =
+      foldRight[Option[A]](None)((c, a) => Some(c))
   }
   case object Empty extends Stream[Nothing]
   case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -63,19 +67,40 @@ class Chapter5Stream extends FunSpec with Matchers {
         Stream(2, 4, 6)
       )
     }
+
     it("5.4") {
       assert(Stream(2, 4, 6).forAll(_ % 2 == 0) == true)
       assert(Stream(2, 4, 6, 7, 8).forAll(_ % 2 == 0) == false)
     }
+
     it("5.5") {
       assertEqual(
         Stream(2, 4, 6, 9, 10, 12).takeWhileViaFoldRight(_ % 2 == 0),
         Stream(2, 4, 6)
       )
     }
+
     it("5.6") {
-      assert(Stream(1,3,4).headOptionViaFoldRight.get == 1)
+      assert(Stream(1, 3, 4).headOptionViaFoldRight.get == 1)
+    }
+
+    it("5.7") {
+      def constant[A](a: A): Stream[A] = Cons(() => a, () => constant(a))
+      assertEqual(constant(5).take(4), Stream(5, 5, 5, 5))
+    }
+
+    it("5.8") {
+      def from(n: Int): Stream[Int] = Cons(() => n, () => from(n + 1))
+      assertEqual(from(5).take(4), Stream(5, 6, 7, 8))
+    }
+
+    it("5.9") {
+      def fibs(one: Int = 0, two: Int = 1): Stream[Int] = {
+        val nex = Cons(() => one + two, () => fibs(two, one + two))
+        if (one == 0) Cons(() => one, () => Cons(() => two, () => nex)) else nex
+      }
+
+      assertEqual(fibs().take(7), Stream(0, 1, 1, 2, 3, 5, 8))
     }
   }
-
 }
