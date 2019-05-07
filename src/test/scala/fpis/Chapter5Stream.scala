@@ -17,9 +17,21 @@ class Chapter5Stream extends FunSpec with Matchers {
       case Empty      => Empty
     }
     def takeWhile(p: A => Boolean): Stream[A] = this match {
-      case Cons(h, t) => if(p(h())) Cons(h,() => t().takeWhile(p)) else Empty 
-      case Empty => Empty
+      case Cons(h, t) => if (p(h())) Cons(h, () => t().takeWhile(p)) else Empty
+      case Empty      => Empty
     }
+    def forAll(p: A => Boolean): Boolean = this match {
+      case Cons(h, t) => if (p(h())) t().forAll(p) else false
+      case Empty      => true
+    }
+    def foldRight[B](z: => B)(f: (A, => B) => B): B =
+      this match {
+        case Cons(h, t) => f(h(), t().foldRight(z)(f))
+        case _          => z
+      }
+    def takeWhileViaFoldRight(p: A => Boolean): Stream[A] = foldRight[Stream[A]](Empty) ((c,a)=>if(p(c)) Cons(()=>c,()=>a) else Empty)
+
+    def headOptionViaFoldRight():Option[A] = foldRight[Option[A]](None)((c,a)=>Some(c))
   }
   case object Empty extends Stream[Nothing]
   case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -50,6 +62,19 @@ class Chapter5Stream extends FunSpec with Matchers {
         Stream(2, 4, 6, 9, 10, 12).takeWhile(_ % 2 == 0),
         Stream(2, 4, 6)
       )
+    }
+    it("5.4") {
+      assert(Stream(2, 4, 6).forAll(_ % 2 == 0) == true)
+      assert(Stream(2, 4, 6, 7, 8).forAll(_ % 2 == 0) == false)
+    }
+    it("5.5") {
+      assertEqual(
+        Stream(2, 4, 6, 9, 10, 12).takeWhileViaFoldRight(_ % 2 == 0),
+        Stream(2, 4, 6)
+      )
+    }
+    it("5.6") {
+      assert(Stream(1,3,4).headOptionViaFoldRight.get == 1)
     }
   }
 
