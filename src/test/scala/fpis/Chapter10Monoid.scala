@@ -55,16 +55,64 @@ class Chapter10Monoid extends FunSpec with Matchers {
 
       assert(foldRightViaFoldMap(List(1, 2, 3))(0)(_ + _) == 6)
     }
+    def foldMapV[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): B = {
+      if (v.length == 1) return f(v(0))
+      val (h1, h2) = v.splitAt(v.length / 2)
+      val h1f = foldMapV(h1, m)(f)
+      val h2f = foldMapV(h2, m)(f)
+      m.op(h1f, h2f)
+    }
     it("10.7") {
-      def foldMapV[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): B = {
-        if(v.length ==1) return f(v(0))
-        val(h1,h2) =v.splitAt(v.length/2)
-         val h1f = foldMapV(h1,m)(f)
-         val h2f = foldMapV(h2,m)(f)
-        m.op(h1f,h2f)
-      }
       assert(foldMapV(IndexedSeq(1, 2, 3), stringMonoid)(_.toString) == "123")
     }
+    it("10.9") {
+      def isOrdered(as: IndexedSeq[Int]): Boolean = {
+        val m = new Monoid[(Int, Boolean)] {
+          def op(a1: (Int, Boolean), a2: (Int, Boolean)) =
+            if (a1._2 && a2._2) (a1._1, a1._1 < a2._1) else (a1._1, false)
+          val zero = (0, true)
+        }
+        val f = (a: Int) => (a, true)
+        foldMapV(as, m)(f)._2
+      }
+      assert(isOrdered(IndexedSeq(1, 2, 3)) == true)
+      assert(isOrdered(IndexedSeq(2, 1, 3)) == false)
+    }
+    describe("Word Count") {
+      sealed trait WC
+      case class Stub(chars: String) extends WC
+      case class Part(lStub: String, words: Int, rStub: String) extends WC
+      val wcMonoid: Monoid[WC] = new Monoid[WC] {
+        def op(a: WC, b: WC) = (a, b) match {
+          case (Stub(c), Stub(d)) => Stub(c + d)
+          case (Stub(c), Part(l, w, r)) => Part(c + l, w, r)
+          case (Part(l, w, r), Stub(c)) => Part(l, w, r + c)
+          case (Part(l1, w1, r1), Part(l2, w2, r2)) =>
+            Part(l1, w1 + (if ((r1 + l2).isEmpty) 0 else 1) + w2, r2)
+        }
+        def zero: WC = Stub("")
+      }
+
+      it("10.10") {
+        monoidTest(wcMonoid, Stub("meow"), Stub("purr"), Stub("woof"))
+      }
+
+      it("10.11") {
+        def k(c: Char): WC =
+          if (c.isWhitespace)
+            Part("", 0, "")
+          else
+            Stub(c.toString)
+        def count(s: String): Int =
+          foldMapV(s.toIndexedSeq, wcMonoid)(k) match {
+            case Part(lStub, words, rStub) => words + 2
+            case Stub(_)                   => 1
+          }
+        assert(count("meow") === 1)
+        assert(count("meow purr woof") === 3)
+      }
+    }
+
   }
 
 }
